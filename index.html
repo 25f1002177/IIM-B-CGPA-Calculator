@@ -204,6 +204,23 @@
             box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.15);
         }
 
+        .special-fail {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--ink-2);
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        .special-fail input[type="checkbox"] {
+            accent-color: #d4483b;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
         .result {
             background: linear-gradient(145deg, #0f9d8a 0%, #0d7e85 100%);
             border-radius: 18px;
@@ -409,6 +426,7 @@
                 <input type="number" id="marketing" placeholder="0-100" min="0" max="100" step="0.01">
                 <div class="grade-badge" id="marketing-grade">-</div>
             </div>
+            <label class="special-fail"><input type="checkbox" id="marketing-fail"> CLA/In-center/Project fail (force F)</label>
         </div>
 
         <div class="subject">
@@ -419,6 +437,7 @@
                 <input type="number" id="fsbp" placeholder="0-100" min="0" max="100" step="0.01">
                 <div class="grade-badge" id="fsbp-grade">-</div>
             </div>
+            <label class="special-fail"><input type="checkbox" id="fsbp-fail"> CLA/In-center/Project fail (force F)</label>
         </div>
 
         <div class="subject">
@@ -429,6 +448,7 @@
                 <input type="number" id="entrep" placeholder="0-100" min="0" max="100" step="0.01">
                 <div class="grade-badge" id="entrep-grade">-</div>
             </div>
+            <label class="special-fail"><input type="checkbox" id="entrep-fail"> CLA/In-center/Project fail (force F)</label>
         </div>
 
         <div class="subject pending">
@@ -439,6 +459,7 @@
                 <input type="number" id="cmii" placeholder="Pending" min="0" max="100" step="0.01">
                 <div class="grade-badge" id="cmii-grade">-</div>
             </div>
+            <label class="special-fail"><input type="checkbox" id="cmii-fail"> CLA/In-center/Project fail (force F)</label>
         </div>
 
         <div class="subject">
@@ -449,6 +470,7 @@
                 <input type="number" id="comm" placeholder="0-100" min="0" max="100" step="0.01">
                 <div class="grade-badge" id="comm-grade">-</div>
             </div>
+            <label class="special-fail"><input type="checkbox" id="comm-fail"> CLA/In-center/Project fail (force F)</label>
         </div>
 
         <div class="subject">
@@ -459,6 +481,7 @@
                 <input type="number" id="ebm" placeholder="0-100" min="0" max="100" step="0.01">
                 <div class="grade-badge" id="ebm-grade">-</div>
             </div>
+            <label class="special-fail"><input type="checkbox" id="ebm-fail"> CLA/In-center/Project fail (force F)</label>
         </div>
 
         <div class="subject pending">
@@ -469,6 +492,7 @@
                 <input type="number" id="stats" placeholder="Pending" min="0" max="100" step="0.01">
                 <div class="grade-badge" id="stats-grade">-</div>
             </div>
+            <label class="special-fail"><input type="checkbox" id="stats-fail"> CLA/In-center/Project fail (force F)</label>
         </div>
 
         <div class="result">
@@ -502,14 +526,16 @@
             'stats': { credits: 1.5, name: 'Statistics' }
         };
 
-        function getGrade(score) {
+        function getGrade(score, hasComponentFail) {
             if (score === '' || score === null) return '-';
             const s = parseFloat(score);
+            if (hasComponentFail) return 'F';
             if (s >= 90) return 'O';
             if (s >= 80) return 'A';
             if (s >= 70) return 'B';
             if (s >= 60) return 'C';
             if (s >= 50) return 'D';
+            if (s >= 40) return 'E';
             return 'F';
         }
 
@@ -520,6 +546,7 @@
                 'B': 8,
                 'C': 7,
                 'D': 6,
+                'E': 5,
                 'F': 0
             };
             return gradePoints[grade] ?? 0;
@@ -533,10 +560,11 @@
 
             for (const [id, data] of Object.entries(subjects)) {
                 const input = document.getElementById(id);
+                const failOverride = document.getElementById(id + '-fail');
                 const score = parseFloat(input.value);
                 
                 if (input.value !== '' && !isNaN(score)) {
-                    const grade = getGrade(score);
+                    const grade = getGrade(score, failOverride.checked);
                     const gradePoint = getGradePoint(grade);
                     document.getElementById(id + '-grade').textContent = grade;
                     weightedGradePointSum += gradePoint * data.credits;
@@ -564,11 +592,13 @@
 
         for (const id in subjects) {
             document.getElementById(id).addEventListener('input', calculateCGPA);
+            document.getElementById(id + '-fail').addEventListener('change', calculateCGPA);
         }
 
         function resetAll() {
             for (const id in subjects) {
                 document.getElementById(id).value = '';
+                document.getElementById(id + '-fail').checked = false;
                 document.getElementById(id + '-grade').textContent = '-';
             }
             calculateCGPA();
