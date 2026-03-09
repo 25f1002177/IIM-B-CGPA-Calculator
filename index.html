@@ -513,8 +513,21 @@
             return 'F';
         }
 
+        function getGradePoint(grade) {
+            const gradePoints = {
+                'O': 10,
+                'A': 9,
+                'B': 8,
+                'C': 7,
+                'D': 6,
+                'F': 0
+            };
+            return gradePoints[grade] ?? 0;
+        }
+
         function calculateCGPA() {
-            let weightedSum = 0;
+            let weightedGradePointSum = 0;
+            let weightedScoreSum = 0;
             let creditsCompleted = 0;
             const totalCredits = 13.5;
 
@@ -524,8 +537,10 @@
                 
                 if (input.value !== '' && !isNaN(score)) {
                     const grade = getGrade(score);
+                    const gradePoint = getGradePoint(grade);
                     document.getElementById(id + '-grade').textContent = grade;
-                    weightedSum += score * data.credits;
+                    weightedGradePointSum += gradePoint * data.credits;
+                    weightedScoreSum += score * data.credits;
                     creditsCompleted += data.credits;
                 } else {
                     document.getElementById(id + '-grade').textContent = '-';
@@ -539,11 +554,11 @@
                 return;
             }
 
-            const weightedAvg = weightedSum / creditsCompleted;
-            const cgpa = (weightedAvg / 10).toFixed(2);
+            const cgpa = (weightedGradePointSum / creditsCompleted).toFixed(2);
+            const weightedAvgScore = weightedScoreSum / creditsCompleted;
             
             document.getElementById('cgpa').textContent = cgpa;
-            document.getElementById('percentage').textContent = weightedAvg.toFixed(2) + '%';
+            document.getElementById('percentage').textContent = weightedAvgScore.toFixed(2) + '%';
             document.getElementById('credits-completed').textContent = `${creditsCompleted} / ${totalCredits} credits`;
         }
 
